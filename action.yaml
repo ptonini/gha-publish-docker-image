@@ -1,0 +1,53 @@
+name: 'publish-docker-image'
+description: ''
+inputs:
+  repository:
+    description: ''
+    required: true
+  tags:
+    description: ''
+    required: true
+  build_arguments:
+    description: ''
+    required: false
+    default: ''
+  path:
+    description: ''
+    required: true
+    default: ${{ github.workspace }}
+  registry:
+    description: ''
+    required: false
+    default: ghcr.io
+  registry_username:
+    description: ''
+    required: false
+    default: ${{ github.actor }}
+  registry_password:
+    description: ''
+    required: false
+    default: ${{ github.token }}
+outputs:
+  checksum:
+    description: ''
+    value: ${{ steps.checksum.outputs.checksum }}
+runs:
+  using: composite
+  steps:
+    - uses: docker/login-action@v1
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_password }}
+    - run: docker build ${{ inputs.path }} -t ${{ inputs.repository }} ${{ inputs.build_arguments }}
+      shell: bash
+    - run: echo "::set-output name=checksum::$(docker inspect --format='{{.Parent}}' "${{ inputs.repository }}" | cut -d ':' -f 2)"
+      id: checksum
+      shell: bash
+    - run: |
+        for TAG in ${{ inputs.tags }}; do
+          docker tag ${{ inputs.repository }} ${{ inputs.repository }}:${TAG}
+          docker push ${{ inputs.repository }}:${TAG}
+        done
+      shell: bash
+      
