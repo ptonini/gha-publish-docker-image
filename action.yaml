@@ -41,7 +41,7 @@ runs:
         password: ${{ inputs.registry_password }}
     - run: docker build ${{ inputs.path }} -t ${{ inputs.repository }} ${{ inputs.build_arguments }}
       shell: bash
-    - run: echo "::set-output name=checksum::$(docker inspect --format='{{.Parent}}' "${{ inputs.repository }}" | cut -d ':' -f 2)"
+    - run: echo "checksum=$(docker inspect --format='{{.Parent}}' "${{ inputs.repository }}" | cut -d ':' -f 2)" >> GITHUB_OUTPUT
       id: checksum
       shell: bash
     - run: |
