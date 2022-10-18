@@ -3,10 +3,12 @@ description: ''
 inputs:
   repository:
     description: ''
-    required: true
+    required: false
+    default: ghcr.io/${{ github.repository }}
   tags:
     description: ''
-    required: true
+    required: false
+    default: latest
   build_arguments:
     description: ''
     required: false
