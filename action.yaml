@@ -30,28 +30,32 @@ inputs:
     required: false
     default: ${{ github.token }}
 outputs:
-  checksum:
+  digest:
     description: ''
-    value: ${{ steps.checksum.outputs.checksum }}
+    value: ${{ steps.build.outputs.digest }}
 runs:
   using: composite
   steps:
+    - run: echo "TAGS=$(for T in ${{ inputs.tags }}; do printf "${{ inputs.repository }}:${T},"; done)" | tee -a $GITHUB_ENV
+      shell: bash
+    - uses: docker/setup-buildx-action@v2
     - uses: docker/login-action@v2
       with:
         registry: ${{ inputs.registry }}
         username: ${{ inputs.registry_username }}
         password: ${{ inputs.registry_password }}
-    - run: docker build ${{ inputs.path }} -t ${{ inputs.repository }} ${{ inputs.build_arguments }}
-      shell: bash
-    - run: |
-        for TAG in ${{ inputs.tags }}; do
-          docker tag ${{ inputs.repository }} ${{ inputs.repository }}:${TAG}
-          docker push ${{ inputs.repository }}:${TAG}
-        done
-      shell: bash
-    - run: docker inspect "${{ inputs.repository }}" | jq .
-      shell: bash
-    - run: echo "checksum=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ inputs.repository }} | cut -d ':' -f 2)" | tee $GITHUB_OUTPUT
-      id: checksum
+    - uses: actions/cache@v3
+      with:
+        path: /tmp/cache
+        key: ${{ inputs.repository }}-buildx
+    - uses: docker/build-push-action@v3
+      id: build
+      with:
+        context: ${{ inputs.path }}
+        push: true
+        tags: ${{ env.TAGS }}
+        cache-from: type=local,src=/tmp/cache
+        cache-to: type=local,mode=max,dest=/tmp/cache-new
+    - run: rm -rf /tmp/cache && mv /tmp/cache-new /tmp/cache
       shell: bash
       
