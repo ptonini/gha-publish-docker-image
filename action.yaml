@@ -9,10 +9,6 @@ inputs:
     description: ''
     required: false
     default: latest
-  build_arguments:
-    description: ''
-    required: false
-    default: ''
   path:
     description: ''
     required: true
@@ -29,6 +25,10 @@ inputs:
     description: ''
     required: false
     default: ${{ github.token }}
+  build_arguments:
+    description: ''
+    required: false
+    default: ''
 outputs:
   digest:
     description: ''
@@ -56,6 +56,7 @@ runs:
         tags: ${{ env.TAGS }}
         cache-from: type=local,src=/tmp/cache
         cache-to: type=local,mode=max,dest=/tmp/cache-new
+        build-args: ${{ inputs.build_arguments }}
     - run: rm -rf /tmp/cache && mv /tmp/cache-new /tmp/cache
       shell: bash
       
