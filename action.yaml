@@ -17,7 +17,7 @@ inputs:
     description: ''
     required: false
     default: latest
-  path:
+  context:
     description: ''
     required: false
     default: ${{ github.workspace }}
@@ -47,7 +47,7 @@ runs:
     - uses: docker/build-push-action@v3
       id: build
       with:
-        context: ${{ inputs.path }}
+        context: ${{ inputs.context }}
         push: true
         tags: ${{ env.TAGS }}
         cache-from: type=local,src=/tmp/cache
