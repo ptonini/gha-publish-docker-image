@@ -1,4 +1,4 @@
-name: 'publish-docker-image'
+name: publish-docker-image
 description: ''
 inputs:
   registry:
@@ -52,7 +52,9 @@ runs:
         tags: ${{ env.TAGS }}
         cache-from: type=local,src=/tmp/cache
         cache-to: type=local,mode=max,dest=/tmp/cache-new
-        build-args: ${{ inputs.build_arguments }}
+        build-args: |  
+          BUILD_TAGS=${{ inputs.tags }}
+          ${{ inputs.build_arguments }}
     - run: rm -rf /tmp/cache && mv /tmp/cache-new /tmp/cache
       shell: bash
       
